@@ -1,0 +1,42 @@
+#WGCNA on TACC
+
+##Need to put SamplesandTraits.RData file
+##and Soft_Threshold.R script in directory
+
+####
+module load Rstats #(if this isn't in your .bashrc profile already)
+R
+
+# in R 
+source("http://bioconductor.org/biocLite.R")
+biocLite("GO.db")
+biocLite("impute")
+biocLite("preprocessCore")
+install.packages("WGCNA")
+#Select a mirror
+library(WGCNA)
+install.packages("flashClust")
+library(flashClust)
+q() #to get out of R
+n #don't save workspace
+
+#make a job file that contains this:
+echo R CMD BATCH Soft_Threshold.R > sft
+
+launcher_creator.py -n sft.job -t 04:00:00 -j sft -q normal -a UT-2015-05-18 
+sbatch sft.job.slurm
+
+#will produce PDFs
+##pick soft threshold where value crosses 0.9 (red line)
+
+#for me this is 20
+#continue in TOM script with soft threshold (signed) of 14
+
+nano TOM.R
+#change soft threshold to 14 in EVERY instance
+
+echo R CMD BATCH TOM.R > tom
+
+launcher_creator.py -n tom -t 24:00:00 -j tom -q normal -a UT-2015-05-18  
+nano tom.slurm
+sbatch tom.slurm
